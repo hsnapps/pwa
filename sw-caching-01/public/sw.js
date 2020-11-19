@@ -1,12 +1,12 @@
+const STATIC_CACHE = 'static-v3';
+const DYNAMIC_CACHE = 'dynamic';
+
 self.addEventListener('install', event => {
     console.log('[Service Worker] Installing Service Worker ...');
     event.waitUntil(
-        caches.open('static').then(cache => {
+        caches.open(STATIC_CACHE).then(cache => {
             console.log('[Service Worker] Pre-caching App Shell ...');
             cache.addAll([
-                // Manifest
-                '/manifest.json',
-
                 // Contents
                 '/',
                 '/index.html',
@@ -45,8 +45,18 @@ self.addEventListener('install', event => {
     );
 });
 
-self.addEventListener('activate', function() {
+self.addEventListener('activate', function(event) {
     console.log('[Service Worker] Activating Service Worker ....');
+    event.waitUntil(
+        caches.keys().then(keyList => {
+            return Promise.all(keyList.map(key => {
+                if (key !== STATIC_CACHE && key !== DYNAMIC_CACHE) {
+                    console.log('[Service Worker] Removing old cache.');
+                    return caches.delete(key);
+                }
+            }));
+        })
+    );
     return self.clients.claim();
 });
 
@@ -58,11 +68,11 @@ self.addEventListener('fetch', function(event) {
                 return response;
             } else {
                 return fetch(event.request).then(res => {
-                    return caches.open('dynamic').then(cache => {
+                    return caches.open(DYNAMIC_CACHE).then(cache => {
                         cache.put(event.request.url, res.clone());
                         return res;
                     })
-                });
+                }).catch(err => {});
             }
         })
     );
