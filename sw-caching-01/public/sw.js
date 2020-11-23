@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'static-v4';
+const STATIC_CACHE = 'static-v9';
 const DYNAMIC_CACHE = 'dynamic';
 
 self.addEventListener('install', event => {
@@ -10,10 +10,13 @@ self.addEventListener('install', event => {
                 // Contents
                 '/',
                 '/index.html',
+                '/offline.html',
 
                 // Scripts
                 '/src/js/app.js',
                 '/src/js/feed.js',
+                '/src/js/promise.js',
+                '/src/js/fetch.js',
                 '/src/js/material.min.js',
 
                 // Styles
@@ -69,10 +72,15 @@ self.addEventListener('fetch', function(event) {
             } else {
                 return fetch(event.request).then(res => {
                     return caches.open(DYNAMIC_CACHE).then(cache => {
-                        // cache.put(event.request.url, res.clone());
+                        cache.put(event.request.url, res.clone());
                         return res;
                     })
-                }).catch(err => {});
+                }).catch(err => { // Offline
+                    return caches.open(STATIC_CACHE)
+                        .then(function(cache) {
+                            return cache.match('/offline.html');
+                        });
+                });
             }
         })
     );
