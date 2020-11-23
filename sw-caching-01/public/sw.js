@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'static-v10';
+const STATIC_CACHE = 'static-v12';
 const DYNAMIC_CACHE = 'dynamic';
 
 self.addEventListener('install', event => {
@@ -63,9 +63,17 @@ self.addEventListener('activate', function(event) {
     return self.clients.claim();
 });
 
-// Network-only
+// network-cache-fallback
 self.addEventListener('fetch', function(event) {
     event.respondWith(
         fetch(event.request)
+        .then(async res => {
+            const cache = await caches.open(DYNAMIC_CACHE);
+            cache.put(event.request.url, res.clone());
+            return res;
+        })
+        .catch(() => {
+            return caches.match(event.request);
+        })
     );
 });
