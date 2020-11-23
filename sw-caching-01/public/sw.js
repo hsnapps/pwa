@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'static-v3';
+const STATIC_CACHE = 'static-v4';
 const DYNAMIC_CACHE = 'dynamic';
 
 self.addEventListener('install', event => {
@@ -69,7 +69,7 @@ self.addEventListener('fetch', function(event) {
             } else {
                 return fetch(event.request).then(res => {
                     return caches.open(DYNAMIC_CACHE).then(cache => {
-                        cache.put(event.request.url, res.clone());
+                        // cache.put(event.request.url, res.clone());
                         return res;
                     })
                 }).catch(err => {});
