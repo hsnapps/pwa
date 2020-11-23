@@ -63,9 +63,9 @@ self.addEventListener('activate', function(event) {
     return self.clients.claim();
 });
 
-// Cache-only
+// Network-only
 self.addEventListener('fetch', function(event) {
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
     );
 });
