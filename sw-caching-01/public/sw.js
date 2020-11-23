@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'static-v9';
+const STATIC_CACHE = 'static-v10';
 const DYNAMIC_CACHE = 'dynamic';
 
 self.addEventListener('install', event => {
@@ -63,25 +63,9 @@ self.addEventListener('activate', function(event) {
     return self.clients.claim();
 });
 
+// Cache-only
 self.addEventListener('fetch', function(event) {
-    // console.log('[Service Worker] Fetching something ....', event);
     event.respondWith(
-        caches.match(event.request).then((response) => {
-            if (response) {
-                return response;
-            } else {
-                return fetch(event.request).then(res => {
-                    return caches.open(DYNAMIC_CACHE).then(cache => {
-                        cache.put(event.request.url, res.clone());
-                        return res;
-                    })
-                }).catch(err => { // Offline
-                    return caches.open(STATIC_CACHE)
-                        .then(function(cache) {
-                            return cache.match('/offline.html');
-                        });
-                });
-            }
-        })
+        caches.match(event.request)
     );
 });
